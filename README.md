@@ -1,2 +1,5 @@
-# spark-data-mover
-A cli tool that uses spark sql to move data around
+oracle limitations:
+
+    Table names and column names are truncated to 30 characters
+
+    String columns are truncated to 255 characteres
