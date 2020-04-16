@@ -14,7 +14,8 @@ case class Config(
                    tables: Seq[String] = Seq(),
                    destinationSchema: String = "",
                    destinationFileType: String = "",
-                   writeOptions: Map[String, String] = Map()
+                   writeOptions: Map[String, String] = Map(),
+                   destinationTable: String = ""
                  )
 
 
@@ -32,7 +33,8 @@ case class Destination(
                         destinationType: String,
                         schema: Option[String],
                         fileType: Option[String],
-                        writeOptions: Map[String, String]
+                        writeOptions: Map[String, String],
+                        tableName: Option[String]
                       )
 
 object Cli {
@@ -52,7 +54,9 @@ object Cli {
 
   """
 
-  val conf = new SparkConf().set("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", "2")
+  val conf = new SparkConf()
+    .set("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", "2")
+
   val spark = SparkSession.builder.config(conf).appName("Spark SQL data mover")
     .master("local[*]").getOrCreate()
 
@@ -100,6 +104,10 @@ object Cli {
         .action((destFileType, c) => c.copy(destinationFileType = destFileType))
         .text("Type of file to write one of [csv, parquet, json, orc]. If destination is of file this is argument is required"),
 
+      opt[String]("destination-table")
+        .action((destTable, c) => c.copy(destinationTable = destTable))
+        .text("Name of the table to be created, used in conjuction with source filetype and destination jdbc"),
+
       opt[Map[String, String]]("write-options")
         .action((writeOptions, c) => c.copy(writeOptions = writeOptions))
         .text("spark options for writing, example for csv: --write_options sep=';' header=true..., for more options read the docs")
@@ -116,14 +124,17 @@ object Cli {
     }
   }
 
-  def validateArgsCombinations(source: Source, config: Config) = {
-    if (Seq("file", "s3").contains(source.sourceType) && config.fileType == "")
+  def validateArgsCombinations(source: Source, destination: Destination) = {
+    if (Seq("file", "s3").contains(source.sourceType) && source.fileType.isEmpty)
       throw new IllegalArgumentException("If file or s3 source is specified, file type must be provided")
 
-    if (config.destination.startsWith("file") && config.destinationFileType == "")
+    if (Seq("file", "s3").contains(source.sourceType) && destination.tableName.isEmpty && destination.tableName.isEmpty)
+      throw new IllegalArgumentException("If file or s3 source is specified and destination is jdbc, destination table name must be provided")
+
+    if (destination.path.startsWith("file") && destination.fileType.isEmpty)
       throw new IllegalArgumentException("If destination is of type file, destination-filetype must be provided")
 
-    if (source.sourceType == "jdbc" && config.tables.isEmpty)
+    if (source.sourceType == "jdbc" && source.tables.isEmpty)
       throw new IllegalArgumentException("If source is of type jdbc, tables arg most be provided ")
 
   }
@@ -131,7 +142,7 @@ object Cli {
   def run(config: Config): Unit = {
     val source = parseSource(config)
     val destination = parseDestination(config)
-    validateArgsCombinations(source, config)
+    validateArgsCombinations(source, destination)
 
     val reader: Reader = source.sourceType match {
       case "file" => FileReader
@@ -167,13 +178,15 @@ object Cli {
     val writeOptions = config.writeOptions
     val fileType = if (config.destinationFileType == "") None else Some(config.destinationFileType)
     val schema = if (config.destinationSchema == "") None else Some(config.destinationSchema)
+    val table = if (config.destinationTable == "") None else Some(config.destinationTable)
 
     Destination(
       destination,
       destinationType,
       schema,
       fileType,
-      writeOptions
+      writeOptions,
+      table
     )
   }
 

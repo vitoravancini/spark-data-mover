@@ -11,7 +11,7 @@ object ConsoleWriter extends Writer {
 }
 
 object FileWriter extends Writer {
-  override def write(name: String, df: Dataset[Row],destination: Destination): Unit = {
+  override def write(name: String, df: Dataset[Row], destination: Destination): Unit = {
     val writePath = destination.path.split("file://")(1) + name
     val preWrite = df
       .write
@@ -29,18 +29,22 @@ object FileWriter extends Writer {
 object JdbcWriter extends Writer {
   override def write(name: String, df: Dataset[Row], destination: Destination): Unit = {
     val saveMode = SaveMode.Overwrite
-    val tableName = name.split("\\.")(0)
+    val tableName = if (destination.tableName.isDefined)
+      destination.tableName.get // from file or s3
+    else
+      name.split("\\.")(0) // from jdbc, maybe schema.tablename
 
     val tableAndSchema =
       if (destination.schema.isDefined)
-        destination.schema + "." + tableName
+        destination.schema.get + "." + tableName
       else
         tableName
 
-    df.write.mode(saveMode).jdbc(
+    df.write.mode(saveMode).option("batchsize", 100000)
+      .jdbc(
       destination.path,
       tableAndSchema,
-      new java.util.Properties
+      new java.util.Properties()
     )
   }
 }
