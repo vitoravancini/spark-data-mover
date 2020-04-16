@@ -1,8 +1,12 @@
-import java.io.File
+package datamover
 
-import com.github.mrpowers.spark.daria.sql.EtlDefinition
+import datamover.Types.Transformation
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.{Dataset, Row, SparkSession}
+
+object Types {
+  type Transformation = Dataset[Row] => Dataset[Row]
+}
 
 case class Config(
                    source: String = "",
@@ -124,11 +128,11 @@ object Cli {
     }
   }
 
-  def validateArgsCombinations(source: Source, destination: Destination) = {
+  def validateArgsCombinations(source: Source, destination: Destination): Unit = {
     if (Seq("file", "s3").contains(source.sourceType) && source.fileType.isEmpty)
       throw new IllegalArgumentException("If file or s3 source is specified, file type must be provided")
 
-    if (Seq("file", "s3").contains(source.sourceType) && destination.tableName.isEmpty && destination.tableName.isEmpty)
+    if (Seq("file", "s3").contains(source.sourceType) && destination.destinationType == "jdbc" && destination.tableName.isEmpty)
       throw new IllegalArgumentException("If file or s3 source is specified and destination is jdbc, destination table name must be provided")
 
     if (destination.path.startsWith("file") && destination.fileType.isEmpty)
@@ -137,6 +141,12 @@ object Cli {
     if (source.sourceType == "jdbc" && source.tables.isEmpty)
       throw new IllegalArgumentException("If source is of type jdbc, tables arg most be provided ")
 
+  }
+
+  def applyTransformations(df: Dataset[Row], transformations: Seq[Transformation]): Dataset[Row] = {
+    transformations.foldLeft(df)((acc, transformation) => {
+      acc.transform(transformation)
+    })
   }
 
   def run(config: Config): Unit = {
@@ -152,17 +162,21 @@ object Cli {
 
     val writer: Writer = config.destination match {
       case "console" => ConsoleWriter
-      case dest if dest.startsWith("jdbc") => JdbcWriter
-      case dest if dest.startsWith("file") => FileWriter
+      case dest if dest.startsWith("jdbc") => new JdbcWriter
+      case dest if dest.startsWith("jdbc") && dest.contains("oracle") => new OracleWriter
+      case dest if dest.startsWith("file") => new FileWriter
       case _ => throw new IllegalArgumentException("Unsupported destination " + config.destination)
     }
+
+    val transformations: Seq[Transformation] = getTransformations(source, destination)
 
     val dfs = reader.read(spark, source)
 
     dfs.foreach(nameAndDf => {
       val name = nameAndDf._1
       val df = nameAndDf._2
-      writer.write(name, df, destination)
+      val transformedDf = applyTransformations(df, transformations)
+      writer.write(name, transformedDf, destination)
     })
   }
 
@@ -173,6 +187,7 @@ object Cli {
       case s if destination.startsWith("s3") => "s3"
       case s if destination.startsWith("jdbc") => "jdbc"
       case s if destination.startsWith("file") => "file"
+      case s if destination.startsWith("console") => "console"
       case _ => throw new IllegalArgumentException("Source must be of type s3, jdbc or file")
     }
     val writeOptions = config.writeOptions
@@ -207,4 +222,14 @@ object Cli {
 
     Source(sourceType, source, fileType, readOptions, tables, limit)
   }
+
+  def getTransformations(source: Source, destination: Destination): Seq[Transformation] = {
+
+    val transformers: Seq[Transformer] = Seq(PostgresTransformer)
+
+    transformers.flatMap(transformer => {
+      if (transformer.trigger(source, destination)) transformer.transformations() else Seq[Transformation]()
+    })
+  }
+
 }

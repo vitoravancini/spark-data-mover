@@ -1,3 +1,5 @@
+package datamover
+
 object JdbcUtils {
 
   private val JDBC_SQL_SERVER_PATTERN = "sqlserver"

@@ -9,6 +9,10 @@ resolvers += "Spark Packages Repo" at "http://dl.bintray.com/spark-packages/mave
 
 val excludeJacksonBinding = ExclusionRule(organization = "org.fasterxml")
 
+
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.6.8" % "test"
+testFrameworks += new TestFramework("utest.runner.Framework")
+
 libraryDependencies += "org.apache.spark" %% "spark-sql" % "2.4.0" // % "provided"
 libraryDependencies += "mrpowers" % "spark-daria" % "0.35.0-s_2.11"
 
@@ -26,7 +30,7 @@ dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.
 
 enablePlugins(sbtdocker.DockerPlugin)
 
-mainClass in assembly := Some("Cli")
+mainClass in assembly := Some("datamover.Cli")
 
 dockerfile in docker := {
   // The assembly task generates a fat JAR file

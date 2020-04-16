@@ -1,3 +1,5 @@
+package datamover
+
 import org.apache.spark.sql.{Dataset, Row, SparkSession}
 
 trait Reader {
