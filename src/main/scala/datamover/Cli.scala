@@ -72,7 +72,7 @@ object Cli {
 
     OParser.sequence(
       programName("Data Mover"),
-      head("Data mover", "1.0", "Move data from any source to any destination that spark sql supports"),
+      head("Data mover", "Move data from any source to any destination that spark sql supports"),
 
       opt[String]('s', "source")
         .required()

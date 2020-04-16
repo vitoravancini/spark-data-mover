@@ -1,6 +1,6 @@
 import sbt.ExclusionRule
 
-name := "sql-ingestion"
+name := "spark-datamover"
 
 version := "0.1"
 
@@ -32,6 +32,14 @@ enablePlugins(sbtdocker.DockerPlugin)
 
 mainClass in assembly := Some("datamover.Cli")
 
+imageNames in docker := Seq(
+  // Sets a name with a tag that contains the project version
+  ImageName(
+    namespace = Some("techindicium"),
+    repository = name.value,
+    tag = Some("v" + version.value)
+  )
+)
 dockerfile in docker := {
   // The assembly task generates a fat JAR file
   val artifact: File = assembly.value

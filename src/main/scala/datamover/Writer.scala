@@ -35,8 +35,10 @@ class JdbcWriter extends Writer {
   override def getDestinationTableName(destination: Destination, dfName: String): String = {
     if (destination.tableName.isDefined)
       destination.tableName.get // from file or s3 or oracle Writer
-    else
-      dfName.split("\\.")(0) // from jdbc, maybe schema.tablename
+    else {
+      val splitted = dfName.split("\\.") // from jdbc, maybe schema.tablename
+      if (splitted.length == 1) splitted(0) else splitted(1)
+    }
   }
 
   override def write(name: String, df: Dataset[Row], destination: Destination): Unit = {
