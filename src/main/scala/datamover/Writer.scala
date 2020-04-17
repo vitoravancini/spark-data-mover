@@ -16,7 +16,7 @@ object ConsoleWriter extends Writer {
 
 class FileWriter extends Writer {
   override def write(name: String, df: Dataset[Row], destination: Destination): Unit = {
-    val writePath = destination.path.split("file://")(1) + name
+    val writePath = destination.path
     val preWrite = df
       .write
       .mode(SaveMode.Overwrite)

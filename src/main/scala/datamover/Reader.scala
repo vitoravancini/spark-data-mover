@@ -9,7 +9,7 @@ trait Reader {
 
 object FileReader extends Reader {
   override def read(spark: SparkSession, source: Source): Map[String, Dataset[Row]] = {
-    val path = source.path.split("file://")(1)
+    val path = source.path
     val df = spark.read
         .format(source.fileType.get)
         .options(source.readOptions)

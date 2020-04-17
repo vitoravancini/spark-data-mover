@@ -47,7 +47,7 @@ object Cli {
     """
                        Source is a source in the form of jdbc connection string, s3 or local file system
                        File:
-                          file:///tmp/*/file.csv            // you can use wildcard here
+                          /tmp/*/file.csv            // you can use wildcard here, but file source must be absolute, must start with '/'
                        S3:
                           s3://indicium-data/raw/*/somefile.json  // you can use wildcard here
                        if source is file type or s3, filetype must be provided
@@ -94,7 +94,7 @@ object Cli {
       opt[String]("destination")
         .required()
         .action((dest, c) => c.copy(destination = dest))
-        .text("Destination of the data, can be the same of the source or 'console' for printing the output to the console"),
+        .text("Destination of the data, can be the same of the source or 'console' for printing the output to the console, note that this is a spark job, so the output is a folder with the partitions"),
 
       opt[Seq[String]]("tables")
         .action((tables, c) => c.copy(tables = tables))
@@ -164,7 +164,7 @@ object Cli {
       case "console" => ConsoleWriter
       case dest if dest.startsWith("jdbc") => new JdbcWriter
       case dest if dest.startsWith("jdbc") && dest.contains("oracle") => new OracleWriter
-      case dest if dest.startsWith("file") => new FileWriter
+      case dest if dest.startsWith("/") => new FileWriter
       case _ => throw new IllegalArgumentException("Unsupported destination " + config.destination)
     }
 
@@ -186,7 +186,7 @@ object Cli {
     val destinationType = destination match {
       case s if destination.startsWith("s3") => "s3"
       case s if destination.startsWith("jdbc") => "jdbc"
-      case s if destination.startsWith("file") => "file"
+      case s if destination.startsWith("/") => "file"
       case s if destination.startsWith("console") => "console"
       case _ => throw new IllegalArgumentException("Source must be of type s3, jdbc or file")
     }
@@ -211,7 +211,7 @@ object Cli {
     val sourceType = source match {
       case s if source.startsWith("s3") => "s3"
       case s if source.startsWith("jdbc") => "jdbc"
-      case s if source.startsWith("file") => "file"
+      case s if source.startsWith("/") => "file"
       case _ => throw new IllegalArgumentException("Source must be of type s3, jdbc or file")
     }
 
