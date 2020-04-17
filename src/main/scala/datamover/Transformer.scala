@@ -26,6 +26,7 @@ object PostgresTransformer extends Transformer {
 
     columns.foldLeft(df)((df, colName) => {
       val name = colName.toLowerCase()
+        .trim()
         .replace(" ", "_")
         .replace("(", "_")
         .replace(")", "_")

@@ -53,7 +53,7 @@ object Cli {
                        if source is file type or s3, filetype must be provided
                        Jdbc alternatives and jdbc connections string example:
                           postgres:  jdbc:postgresql://<host>:<port>/<database>?user=<user>&password=<password>
-                          oracle:    jdbc:oracle:thin:<user>/<password>@<host>:<port>
+                          oracle:    jdbc:oracle:thin:<user>/<passwd>@<host>:<port>:<database>
                           sqlserver: jdbc:sqlserver://<host>:<port>;database=<database>;user=<user>;password=<password>;
 
   """

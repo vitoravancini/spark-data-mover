@@ -13,7 +13,7 @@ object JdbcUtils {
     val tableFromQuery = if (databaseType.contains("oracle"))
       s"(select * from ( select * from $tableName) where ROWNUM <= $sample)"
     else
-      s"(select * from $tableName limit $sample)"
+      s"(select * from $tableName limit $sample) as s"
     tableFromQuery
   }
 
