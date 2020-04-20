@@ -24,8 +24,7 @@ For more instructions and help, run:
 * Loading a csv file to a PostgresSQL at localhost
 
 ```
-docker run --network host techindicium/spark-datamover:v0.1 -s /home/path/your_file.csv csv 
---destination "jdbc:postgresql://localhost:PORT/DATABASE?user=USERNAME&password=PASSWD" --destination-table MY_DEST_TABLE
+docker run --network host techindicium/spark-datamover:v0.1 -s /home/path/your_file.csv csv --destination "jdbc:postgresql://localhost:PORT/DATABASE user=USERNAME&password=PASSWD" --destination-table MY_DEST_TABLE
 ```
 
 * Notes
