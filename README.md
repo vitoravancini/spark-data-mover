@@ -6,7 +6,7 @@
 
 ## Understanding Data Mover
 
-**Data mover 1.0** moves data **from** any source **to** any destination that **SparkSQL** supports
+**Data Mover 1.0** moves data **from** any source **to** any destination that **SparkSQL** supports
 
 * Get data from Amazon S3 and load it to a database
 * Dump a defined number of rows of a table from a database
@@ -14,7 +14,7 @@
 
 ## Getting started
 
-Data Mover is already published to docker as techindicium/spark-datamover:v0.1
+Data Mover is already published to docker as techindicium/spark-datamover:v0.1.
 For more instructions and help, run:
 
 `docker run techindicium/spark-datamover:v0.1 --help`
@@ -24,7 +24,7 @@ For more instructions and help, run:
 * Loading a csv file to a PostgresSQL at localhost
 
 ```
-docker run --network host techindicium/spark-datamover:v0.1 -s file:///home/path/your_file.csv csv 
+docker run --network host techindicium/spark-datamover:v0.1 -s /home/path/your_file.csv csv 
 --destination "jdbc:postgresql://localhost:PORT/DATABASE?user=USERNAME&password=PASSWD" --destination-table MY_DEST_TABLE
 ```
 
@@ -32,6 +32,17 @@ docker run --network host techindicium/spark-datamover:v0.1 -s file:///home/path
 
 1. If your database is in your localhost, it is necessary to set the argument `--network host` after `docker run`
 2. The destination path **must be** inside quotes
+
+* Getting a csv file from a table in Postgres
+
+```
+docker run --network host -v /home/user:/home/user techindicium/spark-datamover:v0.1 -s "jdbc:postgresql://localhost:PORT/DATABASE?user=USERNAME&password=PASSWD" --limit 100 --destination /home/path/my_table.csv --tables my_table --destination-filetype csv
+
+```
+
+* Notes
+
+1. In order to get a csv file, it is necessary the -v argument after `docker run`. It is responsible of mapping the volumes of your pc and docker.
 
 ## Oracle limitations: 
 
