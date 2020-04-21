@@ -42,7 +42,10 @@ class JdbcWriter extends Writer {
   }
 
   override def write(name: String, df: Dataset[Row], destination: Destination): Unit = {
-    val saveMode = SaveMode.Overwrite
+    val saveMode = destination.writeOptions.get("save-mode") match {
+      case Some("append") => SaveMode.Append
+      case _ => SaveMode.Overwrite
+    }
     val tableName = getDestinationTableName(destination, name)
 
     val tableAndSchema =
@@ -52,6 +55,7 @@ class JdbcWriter extends Writer {
         tableName
 
     df.write.mode(saveMode)
+      .options(destination.writeOptions)
       .option("batchsize", 100000)
       .jdbc(
         destination.path,
