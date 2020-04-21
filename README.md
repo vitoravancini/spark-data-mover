@@ -43,6 +43,24 @@ docker run --network host -v /home/user:/home/user techindicium/spark-datamover:
 
 1. In order to get a csv file, it is necessary the -v argument after `docker run`. It is responsible of mapping the volumes of your pc and docker.
 
+
+## Sampling
+
+  One can specify how many lines to read from the specified source with --limit
+
+## JDBC specifics: 
+
+  Write and read options can be specified with --write-options k=v,k1=v1 and --read-options k=v,k1=v1
+
+  Besides the options that the spark data sources allows for reading and writing ( you can check them at the respective docs: https://spark.apache.org/docs/latest/sql-data-sources-jdbc.html), you can specify save-mode as append or overwrite
+
+  e.g.: 
+
+  ```
+  docker run --network host techindicium/spark-datamover:v0.1 -s /home/path/your_file.csv csv --destination "jdbc:postgresql://localhost:PORT/DATABASE user=USERNAME&password=PASSWD" --destination-table MY_DEST_TABLE --write-options save-mode=append
+  ```
+
+
 ## Oracle limitations: 
 
 -    Table names and column names are truncated to 30 characters
