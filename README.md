@@ -19,17 +19,29 @@ For more instructions and help, run:
 
 `docker run techindicium/spark-datamover:v0.1 --help`
 
-## Example
+## ExampleS
+
+* Loading a csv file from AWS S3 to a PostgreSQL database
+
+1. Environment variables are defined via the `-e` argument;
+
+2. CSV options such as header, sep etc. can be defined in the `--read-options` argument;
+
+```
+docker run -e AWS_SECRET_ACCESS_KEY=MY_SECRET_KEY -e AWS_ACCESS_KEY_ID=MY_ACCESS_KEY techindicium/spark-datamover:v0.1 -s s3://folder/subfolder/subfolder/file.csv --filetype csv --read-options header=true --destination "jdbc:postgresql://localhost:PORT/DATABASE?user=USERNAME&password=PASSWD" --destination-table MY_DEST_TABLE
+```
 
 * Loading a csv file to a PostgresSQL at localhost
 
 ```
-docker run --network host techindicium/spark-datamover:v0.1 -s /home/path/your_file.csv csv --destination "jdbc:postgresql://localhost:PORT/DATABASE user=USERNAME&password=PASSWD" --destination-table MY_DEST_TABLE
+docker run --network host techindicium/spark-datamover:v0.1 -s /home/path/your_file.csv --filetype csv --destination "jdbc:postgresql://localhost:PORT/DATABASE?user=USERNAME&password=PASSWD" --destination-table MY_DEST_TABLE
 ```
+
 
 * Notes
 
 1. If your database is in your localhost, it is necessary to set the argument `--network host` after `docker run`
+
 2. The destination path **must be** inside quotes
 
 * Getting a csv file from a table in Postgres
@@ -41,12 +53,12 @@ docker run --network host -v /home/user:/home/user techindicium/spark-datamover:
 
 * Notes
 
-1. In order to get a csv file, it is necessary the -v argument after `docker run`. It is responsible of mapping the volumes of your pc and docker.
+1. In order to get a csv file, it is necessary the -v argument after `docker run`. It is responsible for mapping the volumes of your pc and docker.
 
 
 ## Sampling
 
-  One can specify how many lines to read from the specified source with --limit
+  User can define how many lines to read from the specified source with --limit
 
 ## JDBC specifics: 
 
@@ -57,7 +69,7 @@ docker run --network host -v /home/user:/home/user techindicium/spark-datamover:
   e.g.: 
 
   ```
-  docker run --network host techindicium/spark-datamover:v0.1 -s /home/path/your_file.csv csv --destination "jdbc:postgresql://localhost:PORT/DATABASE user=USERNAME&password=PASSWD" --destination-table MY_DEST_TABLE --write-options save-mode=append
+  docker run --network host techindicium/spark-datamover:v0.1 -s /home/path/your_file.csv --filetype csv --destination "jdbc:postgresql://localhost:PORT/DATABASE user=USERNAME&password=PASSWD" --destination-table MY_DEST_TABLE --write-options save-mode=append
   ```
 
 
