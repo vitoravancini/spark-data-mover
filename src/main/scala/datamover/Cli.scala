@@ -156,6 +156,7 @@ object Cli {
 
     val reader: Reader = source.sourceType match {
       case "file" => FileReader
+      case "s3" => FileReader
       case "jdbc" => JdbcReader
       case _ => throw new IllegalArgumentException("Unsupported source " + source.sourceType)
     }

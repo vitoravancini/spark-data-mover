@@ -9,11 +9,16 @@ trait Reader {
 
 object FileReader extends Reader {
   override def read(spark: SparkSession, source: Source): Map[String, Dataset[Row]] = {
-    val path = source.path
+    val path = if (source.path.startsWith("s3://"))
+      source.path.replace("s3://", "s3a://")
+    else
+      source.path
+
+
     val df = spark.read
-        .format(source.fileType.get)
-        .options(source.readOptions)
-        .load(path)
+      .format(source.fileType.get)
+      .options(source.readOptions)
+      .load(path)
 
     val sampledOrNot = if (source.limit != -1) df.limit(source.limit) else df
 
@@ -24,9 +29,9 @@ object FileReader extends Reader {
 object JdbcReader extends Reader {
   override def read(spark: SparkSession, source: Source): Map[String, Dataset[Row]] = {
     val driver = JdbcUtils.getJdbcDriver(source.path)
-    source.tables.map( table =>{
+    source.tables.map(table => {
 
-      val tableSampledOrNot = if( source.limit != -1)
+      val tableSampledOrNot = if (source.limit != -1)
         JdbcUtils.buildSampledQuery(table, source.path, source.limit)
       else
         table
