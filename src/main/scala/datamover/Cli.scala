@@ -226,7 +226,7 @@ object Cli {
 
   def getTransformations(source: Source, destination: Destination): Seq[Transformation] = {
 
-    val transformers: Seq[Transformer] = Seq(PostgresTransformer)
+    val transformers: Seq[Transformer] = Seq(PostgresTransformer, OracleTransformer)
 
     transformers.flatMap(transformer => {
       if (transformer.trigger(source, destination)) transformer.transformations() else Seq[Transformation]()
