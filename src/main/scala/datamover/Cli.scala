@@ -3,6 +3,7 @@ package datamover
 import datamover.Types.Transformation
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.{Dataset, Row, SparkSession}
+import org.apache.spark.sql.functions.current_timestamp
 
 object Types {
   type Transformation = Dataset[Row] => Dataset[Row]
@@ -149,6 +150,10 @@ object Cli {
     })
   }
 
+  def addMetadata(dataset: Dataset[Row], source: Source): Dataset[Row] = {
+    return dataset.withColumn("ind_extraction_date", current_timestamp)
+  }
+
   def run(config: Config): Unit = {
     val source = parseSource(config)
     val destination = parseDestination(config)
@@ -177,7 +182,8 @@ object Cli {
       val name = nameAndDf._1
       val df = nameAndDf._2
       val transformedDf = applyTransformations(df, transformations)
-      writer.write(name, transformedDf, destination)
+      val withMeta = addMetadata(transformedDf, source)
+      writer.write(name, withMeta, destination)
     })
   }
 

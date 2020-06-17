@@ -2,7 +2,7 @@ import sbt.ExclusionRule
 
 name := "spark-datamover"
 
-version := "0.1"
+version := "0.2"
 
 scalaVersion := "2.11.8"
 resolvers += "Spark Packages Repo" at "http://dl.bintray.com/spark-packages/maven"

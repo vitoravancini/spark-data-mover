@@ -83,3 +83,10 @@ docker run --network host -v /home/user:/home/user techindicium/spark-datamover:
 ## Reporting bugs and contributing code
 
 -   Want to report a bug or request a feature? Open [an issue](https://github.com/vitoravancini/spark-data-mover/issues/new).
+
+
+## Change log
+
+   0.2.0:
+
+        - add ind_extracion_date column with timestamp of time of extraction
